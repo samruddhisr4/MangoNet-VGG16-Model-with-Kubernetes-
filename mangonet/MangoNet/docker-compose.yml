@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  mangonet:
+    build: .
+    image: mangonet:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - MODEL_PATH=/app/mango_classification_model.h5
+      - PORT=5000
+    volumes:
+      # mount the model from host (optional) - replace the left path with the absolute path to your model
+      - ./mango_classification_model.h5:/app/mango_classification_model.h5:ro
+      # persist uploaded images
+      - ./static/uploads:/app/static/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request, sys; sys.exit(0) if urllib.request.urlopen('http://localhost:5000/health').status==200 else sys.exit(1)\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
